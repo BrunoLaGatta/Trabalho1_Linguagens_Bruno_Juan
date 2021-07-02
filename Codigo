@@ -3,28 +3,6 @@
 #include <conio.h>
 #define TAM 100
 
-/*
-O objetivo do trabalho é o desenvolvimento de uma aplicação com um menu
-interativo, o qual deverá apresentar ao usuário opções de cadastro, busca,
-alteração e remoção de dados. O uso dessas funções deve ser baseado em
-uma aplicação prática. Por exemplo, um sistema para controle de vendas ou
-gerenciamento de horários.
-A implementação deverá ser realizada na linguagem C/C++ e deve fazer uso
-de:
- Tipos de dados primitivos;
- Cadeias de caracteres;
- Enumeração;
- Vetores ou Matrizes;
- Registros;
- Uniões;
- Ponteiros e referências.
-O trabalho poderá ser feito em dupla. A equipe deverá enviar o código fonte e
-um vídeo, de até 5 minutos, apresentando no código o uso de cada item acima
-referido. A não utilização de um ou mais itens deverá ser justificada. O vídeo
-também deverá apresentar a execução da aplicação e o uso das principais
-funcionalidades.
-*/
-
 enum Meses_do_ano {Janeiro = 1, Fevereiro, Marco, Abril, Maio, Junho, Julho, Agosto, Setembro, Outubro, Novembro, Dezembro} Meses;
 
 typedef struct
