@@ -1,0 +1,583 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <conio.h>
+#define TAM 100
+
+/*
+O objetivo do trabalho é o desenvolvimento de uma aplicação com um menu
+interativo, o qual deverá apresentar ao usuário opções de cadastro, busca,
+alteração e remoção de dados. O uso dessas funções deve ser baseado em
+uma aplicação prática. Por exemplo, um sistema para controle de vendas ou
+gerenciamento de horários.
+A implementação deverá ser realizada na linguagem C/C++ e deve fazer uso
+de:
+ Tipos de dados primitivos;
+ Cadeias de caracteres;
+ Enumeração;
+ Vetores ou Matrizes;
+ Registros;
+ Uniões;
+ Ponteiros e referências.
+O trabalho poderá ser feito em dupla. A equipe deverá enviar o código fonte e
+um vídeo, de até 5 minutos, apresentando no código o uso de cada item acima
+referido. A não utilização de um ou mais itens deverá ser justificada. O vídeo
+também deverá apresentar a execução da aplicação e o uso das principais
+funcionalidades.
+*/
+
+enum Meses_do_ano {Janeiro = 1, Fevereiro, Marco, Abril, Maio, Junho, Julho, Agosto, Setembro, Outubro, Novembro, Dezembro} Meses;
+
+typedef struct
+{
+    float altura;
+    float largura;
+    float comprimento;
+} Dimensoes;
+
+typedef union
+{
+    int passageiros;
+    float peso_carga;
+} Carga;
+
+typedef struct
+{
+    char nome[50];
+    int codigo;
+    char tipo_combustivel[20];
+    int tipo_carga;
+    Dimensoes dimensoes;
+    Carga carga;
+} Foguete;
+
+typedef struct
+{
+    int dia;
+    int mes;
+    int ano;
+} Data;
+
+typedef struct mis
+{
+    int codigo;
+    Foguete foguete;
+    char objetivo[100];
+    Data data;
+    char clima[20];
+    struct mis *prox_missao;
+} Missao;
+
+void inicializa_foguetes(Foguete f[])
+{
+    for(int i = 0; i<TAM; i++)
+    {
+        f[i].codigo = -1;
+    }
+}
+
+Missao* busca_lancamento(int cod, Missao *r)
+{
+    if(r == NULL)
+    {
+        return NULL;
+    }
+    else if(r->codigo == cod)
+    {
+        return r;
+    }
+    Missao *temp = r;
+
+    while(temp != NULL)
+    {
+        if(temp->codigo == cod)
+            return temp;
+
+        temp = temp->prox_missao;
+    }
+
+    return NULL;
+}
+
+Missao* remover_lancamento(int cod, Missao *r)
+{
+    Missao *temp = busca_lancamento(cod,r);
+    Missao *ant = r;
+
+    if(temp == NULL)
+    {
+        printf("Missao nao encontrada.\n\n");
+        system("pause");
+    }
+    else if(temp == r)
+    {
+        r = r->prox_missao;
+        free(ant);
+        printf("Missao removida.\n\n");
+        system("pause");
+    }
+    else
+    {
+        while(ant->prox_missao!=temp)
+        {
+            ant = ant->prox_missao;
+        }
+        ant->prox_missao = temp->prox_missao;
+        free(temp);
+        printf("Missao removida.\n\n");
+        system("pause");
+    }
+
+    return r;
+}
+
+Missao* busca_foguete_na_missao(int cod_foguete, Missao *r)
+{
+    if(r == NULL)
+    {
+        return NULL;
+    }
+    else if(r->foguete.codigo == cod_foguete)
+    {
+        return r;
+    }
+    Missao *temp = r;
+
+    while(temp != NULL)
+    {
+        if(temp->foguete.codigo == cod_foguete)
+            return temp;
+
+        temp = temp->prox_missao;
+    }
+
+    return NULL;
+}
+
+int busca_foguete (Foguete f[], int codigo)
+{
+    int plat_econtrada=0;
+    while(f[plat_econtrada].codigo != codigo)
+    {
+        plat_econtrada++;
+        if(plat_econtrada > TAM)
+            return -1;
+    }
+    return plat_econtrada;
+}
+
+void remover_foguete(Foguete f[], int codigo, Missao *r)
+{
+    int retorno;
+    if((retorno = busca_foguete(f, codigo)) != -1 && busca_foguete_na_missao(codigo, r)==NULL)
+    {
+        f[retorno].codigo = -1;
+        printf("Foguete %d removido.\n\n", codigo);
+    }
+    else
+    {
+        printf("Foguete nao encontrado ou esta ligado a uma missao. Cancele a missao e torne a tentar remove-lo.\n\n");
+    }
+    system("pause");
+}
+
+void alterar_foguete(Foguete f[], int cod_foguete)
+{
+    int plataforma = busca_foguete(f, cod_foguete);
+    if(plataforma == -1)
+    {
+        printf("Foguete nao encontrado...\n\n");
+        system("pause");
+        system("cls");
+        return;
+    }
+    printf("Deseja alterar a plataforma do foguete para atualiza-lo?\n1 para sim\n2 para nao\n");
+    scanf("%d", &cod_foguete);
+    system("cls");
+    while(cod_foguete != 1 && cod_foguete !=2)
+    {
+        printf("Opcao invalida! Por favor, digite uma opcao valida: ");
+        scanf("%d", &cod_foguete);
+    }
+    if(cod_foguete == 1)
+    {
+        printf("Digite a nova plataforma que o foguete sera situado: ");
+        scanf("%d", &plataforma);
+        while(f[plataforma].codigo != -1)
+        {
+            printf("Essa plataforma ja esta ocupada por outro foguete.\nDigite uma plataforma diferente: ");
+            scanf("%d", &plataforma);
+            system("cls");
+        }
+    }
+
+    printf("Digite o novo nome do foguete: ");
+    getchar();
+    fgets(f[plataforma].nome, 50, stdin);
+    system("cls");
+    printf("Digite o tipo de combustivel do foguete: ");
+    fflush(stdin);
+    fgets(f[plataforma].tipo_combustivel, 20, stdin);
+    system("cls");
+    printf("Digite as dimensoes do foguete (em metros):\nDigite a altura: ");
+    scanf("%f", &f[plataforma].dimensoes.altura);
+    system("cls");
+    printf("Digite as dimensoes do foguete (em metros):\nDigite a largura: ");
+    scanf("%f", &f[plataforma].dimensoes.largura);
+    system("cls");
+    printf("Digite as dimensoes do foguete (em metros):\nDigite o comprimento: ");
+    scanf("%f", &f[plataforma].dimensoes.comprimento);
+    system("cls");
+    printf("Digite o tipo de carga: \n1 para pessoas\n2 peso da carga\n");
+    scanf("%d", &cod_foguete);
+    system("cls");
+    while(cod_foguete != 1 && cod_foguete != 2)
+    {
+        printf("Opcao invalida! Digite uma opcao valida: ");
+        scanf("%d", &cod_foguete);
+        system("cls");
+    }
+    f[plataforma].tipo_carga = cod_foguete;
+    if(cod_foguete == 1)
+    {
+        printf("Digite o numero de pessoas: ");
+        scanf("%d", &f[plataforma].carga.passageiros);
+    }
+    else
+    {
+        printf("Digite o peso da carga (em kg): ");
+        scanf("%f", &f[plataforma].carga.peso_carga);
+    }
+    system("cls");
+    printf("Foguete atualizado com sucesso!\n\n");
+    system("pause");
+    system("cls");
+}
+
+void cadastrar_foguetes(Foguete f[])
+{
+    int cod_foguete, plataforma;
+    printf("Digite a plataforma que o foguete estara situado: ");
+    scanf("%d", &plataforma);
+    system("cls");
+    while(f[plataforma].codigo != -1)
+    {
+        printf("Essa plataforma ja esta ocupada por outro foguete.\nDigite uma plataforma diferente: ");
+        scanf("%d", &plataforma);
+        system("cls");
+    }
+    printf("Digite o codigo do foguete: ");
+    scanf("%d", &cod_foguete);
+    system("cls");
+    while(busca_foguete(f, cod_foguete) != -1)
+    {
+        printf("Esse codigo ja esta sendo usado em outro foguete.\nDigite um codigo diferente: ");
+        scanf("%d", &cod_foguete);
+        system("cls");
+    }
+    f[plataforma].codigo = cod_foguete;
+    printf("Digite o nome do foguete: ");
+    getchar();
+    fgets(f[plataforma].nome, 50, stdin);
+    system("cls");
+    printf("Digite o tipo de combustivel do foguete: ");
+    fflush(stdin);
+    fgets(f[plataforma].tipo_combustivel, 20, stdin);
+    system("cls");
+    printf("Digite as dimensoes do foguete (em metros):\nDigite a altura: ");
+    scanf("%f", &f[plataforma].dimensoes.altura);
+    system("cls");
+    printf("Digite as dimensoes do foguete (em metros):\nDigite a largura: ");
+    scanf("%f", &f[plataforma].dimensoes.largura);
+    system("cls");
+    printf("Digite as dimensoes do foguete (em metros):\nDigite o comprimento: ");
+    scanf("%f", &f[plataforma].dimensoes.comprimento);
+    system("cls");
+    printf("Digite o tipo de carga: \n1 para pessoas\n2 peso da carga\n");
+    scanf("%d", &cod_foguete);
+    system("cls");
+    while(cod_foguete != 1 && cod_foguete != 2)
+    {
+        printf("Opcao invalida! Digite uma opcao valida: ");
+        scanf("%d", &cod_foguete);
+        system("cls");
+    }
+    f[plataforma].tipo_carga = cod_foguete;
+    if(cod_foguete == 1)
+    {
+        printf("Digite o numero de pessoas: ");
+        scanf("%d", &f[plataforma].carga.passageiros);
+    }
+    else
+    {
+        printf("Digite o peso da carga (em kg): ");
+        scanf("%f", &f[plataforma].carga.peso_carga);
+    }
+    system("cls");
+    printf("Foguete registrado com sucesso!\n\n");
+    system("pause");
+    system("cls");
+}
+
+Missao* alterar_data_lancamento(int cod, Missao *r)
+{
+    Missao* temp = busca_lancamento(cod, r);
+    if(temp == NULL)
+    {
+        printf("Missao nao encontrada...\n\n");
+        system("pause");
+        system("cls");
+        return r;
+    }
+    printf("Digite a data da missao:\nDigite o dia: ");
+    scanf("%d", &temp->data.dia);
+    system("cls");
+    while(temp->data.dia < 1 || temp->data.dia > 31)
+    {
+        printf("Dia invalido. Digite um dia valido: (1 a 31, novo calendario da NASA para lancamentos. Todos os meses tem 31 dias)\n");
+        scanf("%d", &temp->data.dia);
+        system("cls");
+    }
+    printf("Digite a data da missao:\nDigite o mes: ");
+    scanf("%d", &temp->data.mes);
+    system("cls");
+    while(temp->data.mes < Janeiro || temp->data.mes > Dezembro)
+    {
+        printf("Mes invalido. Digite um mes valido: (1 a 12)\n");
+        scanf("%d", &temp->data.mes);
+        system("cls");
+    }
+    printf("Digite a data da missao:\nDigite o ano: ");
+    scanf("%d", &temp->data.ano);
+    system("cls");
+    while(temp->data.ano < 1957)
+    {
+        printf("Ano invalido. Digite um ano valido: (Valido apenas de 1957 em diante)\n");
+        scanf("%d", &temp->data.ano);
+        system("cls");
+    }
+    printf("Digite o novo clima no dia: ");
+    getchar();
+    fgets(temp->clima, 20, stdin);
+    system("cls");
+    printf("Data alterada com sucesso!\n\n");
+    system("pause");
+    system("cls");
+
+    return r;
+}
+
+Missao* novoLancamento(Missao *r, Foguete f[], Missao *raizraiz)
+{
+    int cod_foguete, cod_missao;
+    Missao *novaMissao = malloc(sizeof(Missao));
+    printf("Digite o codigo da missao: ");
+    scanf("%d", &cod_missao);
+    system("cls");
+    while(busca_lancamento(cod_missao, raizraiz)!=NULL && raizraiz!=NULL)
+    {
+        printf("Esse codigo ja esta sendo usado em outra missao.\nDigite um codigo diferente: ");
+        scanf("%d", &cod_missao);
+        system("cls");
+    }
+    novaMissao->codigo = cod_missao;
+    printf("Digite o objetivo da missao: ");
+    getchar();
+    fgets(novaMissao->objetivo, 100, stdin);
+    system("cls");
+    printf("Digite a data da missao:\nDigite o dia: ");
+    scanf("%d", &novaMissao->data.dia);
+    system("cls");
+    while(novaMissao->data.dia < 1 || novaMissao->data.dia > 31)
+    {
+        printf("Dia invalido. Digite um dia valido: (1 a 31, novo calendario da NASA para lancamentos. Todos os meses tem 31 dias)\n");
+        scanf("%d", &novaMissao->data.dia);
+        system("cls");
+    }
+    printf("Digite a data da missao:\nDigite o mes: ");
+    scanf("%d", &novaMissao->data.mes);
+    system("cls");
+    while(novaMissao->data.mes < Janeiro || novaMissao->data.mes > Dezembro)
+    {
+        printf("Mes invalido. Digite um mes valido: (1 a 12)\n");
+        scanf("%d", &novaMissao->data.mes);
+        system("cls");
+    }
+    printf("Digite a data da missao:\nDigite o ano: ");
+    scanf("%d", &novaMissao->data.ano);
+    system("cls");
+    while(novaMissao->data.ano < 1957)
+    {
+        printf("Ano invalido. Digite um ano valido: (Valido apenas de 1957 em diante)\n");
+        scanf("%d", &novaMissao->data.ano);
+        system("cls");
+    }
+    printf("Digite o clima no dia: ");
+    getchar();
+    fgets(novaMissao->clima, 20, stdin);
+    system("cls");
+    printf("Digite o codigo do foguete a ser usado: (Um foguete, so pode estar associado a uma missao por vez, devido aos protocolos!)\n");
+    scanf("%d", &cod_foguete);
+    system("cls");
+    while(busca_foguete(f, cod_foguete) == -1 || busca_foguete_na_missao(cod_foguete, raizraiz) != NULL || cod_foguete < 0)
+    {
+        printf("Codigo invalido (nao encontrado ou ocupado). Digite um codigo valido, ou digite -1 para cancelar insercao: ");
+        scanf("%d", &cod_foguete);
+        system("cls");
+        if(cod_foguete == -1)
+        {
+            free(novaMissao);
+            printf("Cadastramento cancelado.\n\n");
+            system("pause");
+            system("cls");
+            return NULL;
+        }
+    }
+    novaMissao->foguete = f[busca_foguete(f,cod_foguete)];
+    novaMissao->prox_missao = NULL;
+    system("cls");
+    printf("Lancamento agendado!\n\n");
+    system("pause");
+    system("cls");
+    return novaMissao;
+}
+
+Missao* insere(Missao *raiz, Foguete f[], Missao *raizraiz)
+{
+    if(raiz == NULL)
+        return novoLancamento(raiz, f, raizraiz);
+    else
+    {
+        raiz->prox_missao = insere(raiz->prox_missao, f, raizraiz);
+    }
+    return raizraiz;
+}
+
+int main()
+{
+    int op, var;
+    Foguete foguetes[TAM];
+    inicializa_foguetes(foguetes);
+    Missao *raiz = NULL, *ref;
+
+    printf(" _________         _____       __               _________ __                 \n");
+    printf(" \\_   ___ \\  _____/ ____\\_____/  |_            /   _____//  |______ _______  \n");
+    printf(" /    \\  \\/_/ __ \\   __\\/ __ \\   __\\  ______   \\_____  \\\\   __\\__  \\\\_  __ \\ \n");
+    printf(" \\     \\___\\  ___/|  | \\  ___/|  |   /_____/   /        \\|  |  / __ \\|  | \\/ \n");
+    printf("  \\______  /\\___  >__|  \\___  >__|            /_______  /|__| (____  /__|    \n");
+    printf("         \\/     \\/          \\/                        \\/           \\/        \n");
+
+    system("pause");
+    system("cls");
+
+    do
+    {
+        printf("--------------------GERENCIAMENTO CEFET-STAR - GCS--------------------\n");
+        printf("1-Registrar foguetes\n");
+        printf("2-Registrar lancamentos\n");
+        printf("3-Pesquisar por foguetes\n");
+        printf("4-Pesquisar por lancamentos\n");
+        printf("5-Remover foguetes\n");
+        printf("6-Cancelar lancamentos\n");
+        printf("7-Alterar dados do foguete\n");
+        printf("8-Alterar data de lancamento\n");
+        printf("0-Sair do sistema\n");
+
+        printf("\nDigite a opcao desejada: ");
+        scanf("%d", &op);
+        system("cls");
+        switch(op)
+        {
+        case 1:
+            cadastrar_foguetes(foguetes);
+            break;
+        case 2:
+            raiz = insere(raiz, foguetes, raiz);
+            break;
+        case 3:
+            printf("Digite o codigo do foguete: ");
+            scanf("%d", &var);
+            system("cls");
+            var = busca_foguete(foguetes, var);
+            if(var!=-1)
+            {
+                printf("---------------FOGUETE ENCONTRADO!---------------\n");
+                printf("Codigo: %d\nPlataforma: %d\nNome: %s", foguetes[var].codigo, var, foguetes[var].nome);
+                printf("Tipo de combustivel: ");
+                puts(foguetes[var].tipo_combustivel);
+                printf("Dimensoes:\nAltura: %.2f metros\nLargura: %.2f metros\nComprimento: %.2f metros\n\n", foguetes[var].dimensoes.altura, foguetes[var].dimensoes.largura, foguetes[var].dimensoes.comprimento);
+                if(foguetes[var].tipo_carga == 1)
+                    printf("Tipo de carga: Pessoas\nTripulantes: %d\n\n", foguetes[var].carga.passageiros);
+                else
+                    printf("Tipo de carga: Objetos\nPeso da carga: %.2f kg\n\n", foguetes[var].carga.peso_carga);
+
+                system("pause");
+                system("cls");
+            }
+            else
+            {
+                printf("Foguete nao encontrado.\n\n");
+                system("pause");
+                system("cls");
+            }
+            break;
+        case 4:
+            printf("Digite o codigo do lancamento: ");
+            scanf("%d", &var);
+            system("cls");
+            ref = busca_lancamento(var, raiz);
+            if(ref != NULL)
+            {
+                printf("---------------MISSAO ENCONTRADA!---------------\n");
+                printf("Codigo: %d\nCodigo do foguete utilizado: %d\nObjetivo da missao: %s\n", ref->codigo, ref->foguete.codigo, ref->objetivo);
+                printf("Data de lancamento: %d/%d/%d\n", ref->data.dia, ref->data.mes, ref->data.ano);
+                printf("Previsao do tempo para o dia: %s\n\n", ref->clima);
+                system("pause");
+                system("cls");
+            }
+            else
+            {
+                printf("Missao nao encontrada.\n\n");
+                system("pause");
+                system("cls");
+            }
+            break;
+        case 5:
+            printf("Digite o codigo do foguete: ");
+            scanf("%d", &var);
+            system("cls");
+            remover_foguete(foguetes, var, raiz);
+            system("cls");
+            break;
+        case 6:
+            printf("Digite o codigo do lancamento: ");
+            scanf("%d", &var);
+            system("cls");
+            raiz = remover_lancamento(var, raiz);
+            system("cls");
+            break;
+        case 7:
+            printf("Digite o codigo do foguete: ");
+            scanf("%d", &var);
+            system("cls");
+            alterar_foguete(foguetes, var);
+            system("cls");
+            break;
+        case 8:
+            printf("Digite o codigo do lancamento: ");
+            scanf("%d", &var);
+            system("cls");
+            raiz = alterar_data_lancamento(var, raiz);
+            system("cls");
+            break;
+        case 0:
+            printf("Finalizando o programa...\n\n");
+            system("pause");
+            system("cls");
+            break;
+        default:
+            printf("Opcao invalida!");
+        }
+    }
+    while(op!=0);
+    return 0;
+}
